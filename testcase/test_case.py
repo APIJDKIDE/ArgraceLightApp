@@ -2,6 +2,7 @@ import logging
 import time
 
 import pytest
+import yaml
 from appium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 
@@ -27,7 +28,7 @@ class Test_case:
         self.driver.implicitly_wait(10)
         self.utils = Utils()
 
-    #@pytest.mark.skip
+    @pytest.mark.skip
     def test_login(self):
         try:
             #self.driver.find_element("id","ai.argrace.remotecontrol.sit:id/tv_common_define").click() #隐私政策与服务协议
@@ -54,7 +55,7 @@ class Test_case:
 
 
     #新建房间
-    #@pytest.mark.skip
+    @pytest.mark.skip
     def test_createRooms(self):
         self.driver.find_element("id","ai.argrace.remotecontrol.sit:id/iv_more_room").click()
         create_Room_Button_element = self.driver.find_element("xpath","//*[@text='创建房间']")
@@ -85,22 +86,23 @@ class Test_case:
             self.driver.get_screenshot_as_file("test_deleteRooms")
             assert False
 
-    #创建设备卡片 -"灯泡"品类
-    @pytest.mark.parametrize(
-        'deviceType, deviceName',[
-            ("冷暖白光灯","CW"),
-            ("5路彩灯","RGBCW"),
-            ("5路彩灯(支持音乐律动)","RGBCWRhythm"),
-            ("4路彩灯(支持音乐律动)","RGBCWRhythm")
-        ])
-    def test_create_Light_Blub(self,deviceType,deviceName):
+    #创建设备卡片 -不同的品类
+    # @pytest.mark.parametrize(
+    #     'deviceType, deviceName',[
+    #         ("冷暖白光灯","CW"),
+    #         ("5路彩灯","RGBCW"),
+    #         ("5路彩灯(支持音乐律动)","RGBCWRhythm"),
+    #         ("4路彩灯(支持音乐律动)","RGBCWRhythm")
+    #     ])
+    @pytest.mark.parametrize('deviceCategory,deviceType, deviceName', yaml.safe_load(open("./config.yaml","rb")))
+    def test_create_devices(self,deviceCategory,deviceType,deviceName):
 
         #先选择第一个房间
         room_ele = self.driver.find_element("xpath","//*[@content-desc = '总控']/../androidx.appcompat.app.ActionBar.Tab[2]/android.widget.TextView")
 
         room_ele.click()
         self.driver.find_element("id","ai.argrace.remotecontrol.sit:id/iv_add").click()
-        self.driver.find_element("xpath","//*[@text = '灯泡']").click()
+        self.driver.find_element("xpath","//*[@text = '{}']".format(deviceCategory)).click()
         title = self.driver.find_element("xpath","//*[@text = '{}']".format(deviceType)).location  #获取设备类型名称的坐标
         x = title["x"]
         y = title["y"]-50   #上移50个像素，才能选中设备icon
@@ -124,44 +126,6 @@ class Test_case:
             assert True
         except Exception as ex:
             print("ex内容："+ex)
-            assert False
-
-    @pytest.mark.parametrize(
-        'deviceType, deviceName',[
-            ("单色风扇灯","Fan"),
-            ("双色风扇灯","Fan_CW")
-        ])
-    def test_create_FanLight(self,deviceType,deviceName):
-
-        #先选择第一个房间
-        room_ele = self.driver.find_element("xpath","//*[@content-desc = '总控']/../androidx.appcompat.app.ActionBar.Tab[2]/android.widget.TextView")
-
-        room_ele.click()
-        self.driver.find_element("id","ai.argrace.remotecontrol.sit:id/iv_add").click()
-        self.driver.find_element("xpath","//*[@text = '风扇灯']").click()
-        title = self.driver.find_element("xpath","//*[@text = '{}']".format(deviceType)).location  #获取设备类型名称的坐标
-        x = title["x"]
-        y = title["y"]-50   #上移50个像素，才能选中设备icon
-        self.driver.tap([(x,y)])
-
-        self.driver.find_element("xpath","//*[@text = '确定']").click()
-        self.driver.find_element("xpath","//*[contains(@text,'请输入设备名称')]").send_keys(deviceName+'_{}'.format(self.utils.get_curDate()))
-
-        ''' 估计是识别不到弹框，所以"选择设备所属房间"元素没定位到，先忽略
-        belongRoom_locators = "//*[@text = "+"\'所属房间\'"+']'
-        self.driver.find_element("xpath", belongRoom_locators).click()
-        self.driver.find_element_by_android_uiautomator('new UiSelector().textContains(\"自动化房间\")')
-        self.driver.find_element("xpath","//*[@text = '自动化房间20220529']")
-        room_locators = "//*[contains(@text , " + "\'自动化房间\')" + ']'
-        self.driver.find_element("xpath", room_locators).click()   #还没想明白为什么这里定位不到元素。。。
-        '''
-        self.driver.find_elements("xpath","//*[@text = '确定']")[1].click()
-
-        try:
-            self.driver.find_element("xpath","//*[contains(@text,'成功')]")
-            assert True
-        except Exception as ex:
-            print(ex)
             assert False
 
 
