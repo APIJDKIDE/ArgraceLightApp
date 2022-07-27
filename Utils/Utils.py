@@ -23,16 +23,17 @@ class Utils:
     def saveScreenShotFile(self,fileName):
 
         filePath = "../log/{}".format(self.get_curDate())
-
         if not os.path.exists(filePath) :
-            os.mkdir(filePath)
+            os.makedirs(filePath)   #创建多层级文件夹，如果只创建一级文件夹可以直接用os.mkdir(filePath)
         return filePath+"/{}.png".format(fileName)
 
 
 
 
 
-
+    def testsss(self):
+        str = "../log/{}".format(self.get_curDate())
+        os.makedirs(str)
 
 if __name__=="__main__":
-    Utils().get_curDate()
+    Utils().testsss()
